@@ -12,3 +12,20 @@
 
 ## 2026-10-30 - Backend framework checkpoint
 - Re-ran npm test successfully and prepared the minimal backend framework, configuration example and documentation for commit and push.
+
+## 2026-10-30 - Connect Ollama chat
+- Added reusable createOllamaGenerator with configurable base URL, model, fetch implementation and timeout. Server defaults to local Ollama on port 11434 and qwen3:4b from the supplied Postman example.
+- Forwards prompts to /api/chat with stream:false and think:false; returns message.content and reports connection/model/format errors through HTTP 503. Cancels upstream work on browser disconnect.
+- Added adapter and full HTTP route tests; npm test passed all 4 tests.
+- Live Ollama probe used a 45-second test timeout and did not return in time. Real-model response is not verified; application adapter allows 120 seconds. Mocked HTTP route/adapter tests passed.
+
+## 2026-10-30 - Reload configured LLM server
+- Diagnosed the reported unconfigured-service response: startup source already injected Ollama, while the listener on port 3002 was an older Node process.
+- Restarted only the verified LLM listener with current src/server.js. Startup log confirms port 3002 and GET /api/health returns success.
+- Runtime stdout/stderr are in ignored server-output.log and server-error.log. Use npm run dev during development to reload source changes automatically.
+
+- Live verification: POST /api/generate returned HTTP 200 with actual Ollama response text after restart. Model included thinking text despite think:false; currently forwarded as returned.
+
+## 2026-10-30 - Repository synchronization
+- All 4 HTTP/adapter integration tests passed.
+- Prepared current changes for commit and push to origin/main.

@@ -62,7 +62,16 @@ export function createApp({
           sendJson(response, 400, { success: false, message: 'A non-empty prompt string is required.' })
           return
         }
-        const text = await generate(data.prompt.trim())
+        const controller = new AbortController()
+        const onClose = () => { if (!response.writableEnded) controller.abort() }
+        response.once('close', onClose)
+        let text
+        try {
+          text = await generate(data.prompt.trim(), { signal: controller.signal })
+        } finally {
+          response.off('close', onClose)
+        }
+        if (controller.signal.aborted) return
         if (typeof text !== 'string') throw new Error('Model adapter must return response text.')
         sendJson(response, 200, { success: true, response: text })
       } else {
@@ -74,4 +83,5 @@ export function createApp({
     }
   })
 }
+
 
