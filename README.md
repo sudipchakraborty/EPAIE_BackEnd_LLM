@@ -15,11 +15,11 @@ No npm install is needed. Copy `.env.example` to `.env` to override HOST, PORT o
 - `GET /api/health`: service health.
 - `POST /api/generate`: JSON `{ "prompt": "Your question" }`; success returns `{ "success": true, "response": "Model output" }`.
 
-The API returns HTTP 503 until a model adapter is configured. No model, inference provider, database or authentication is included yet. Frontend wiring is unchanged.
+Startup configures the local Ollama adapter automatically. Ollama must be running with the configured model available; provider failures return HTTP 503. Creating the application without a generation adapter also returns HTTP 503. Database access and authentication belong to the separate DB backend and are not implemented here.
 
-## Add a model later
+## Inject a different model adapter
 
-`src/app.js` exports `createApp({ allowedOrigins, generate })`. Supply an async `generate(prompt)` function returning a string. Configure that adapter in `src/server.js` when ready. The application module does not start a listener, so it can be reused and tested independently. Source interfaces include Doxygen-style comments.
+`src/app.js` exports `createApp({ allowedOrigins, generate })`. Supply an async `generate(prompt, { signal })` function returning a string and use the signal to cancel upstream work when the client disconnects. Configure a replacement adapter in `src/server.js`; the default startup already injects Ollama. The application module does not start a listener, so it can be reused and tested independently. Source interfaces include Doxygen-style comments.
 
 Frontend request example:
 
